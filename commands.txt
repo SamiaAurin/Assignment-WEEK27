@@ -1,0 +1,4 @@
+PS D:\Ostad-MERN\EXTRA\Assignment-WEEK27\portfolio-project\backend> npm install mongoose
+
+PS D:\Ostad-MERN\EXTRA\Assignment-WEEK27\portfolio-project\backend> npm install bcryptjs jsonwebtoken
+npm install dotenv
