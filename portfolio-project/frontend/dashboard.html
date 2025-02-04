@@ -70,6 +70,32 @@
       </div>
     </div>
   </div>
+  <!-- Edit Blog Modal -->
+  <div class="modal fade" id="editBlogModal" tabindex="-1" aria-labelledby="editBlogModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editBlogModalLabel">Edit Blog</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-blog-form">
+                    <input type="hidden" id="edit-blog-id">
+                    <div class="mb-3">
+                        <label for="edit-blog-title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="edit-blog-title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-blog-content" class="form-label">Content</label>
+                        <textarea class="form-control" id="edit-blog-content" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Blog</button>
+                </form>
+            </div>
+        </div>
+    </div>
+  </div>
+  <!--------------------------------------------------------------->
   
   <!-- Add Team Member Modal -->
   <div class="modal fade" id="teamModal" tabindex="-1" aria-labelledby="teamModalLabel" aria-hidden="true">
@@ -106,7 +132,8 @@
       </div>
     </div>
   </div>
-  
+
+  <!--------------------------------------------------------------->
   <!-- Add Service Modal -->
   <div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -236,20 +263,96 @@
   </script>
   <!-- Blog Script-->
   <script>
+    function deleteBlog(blogId) {
+        if (!confirm("Are you sure you want to delete this blog?")) return;
+
+        fetch(`http://localhost:5000/api/content/blogs/${blogId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+        .then(() => {
+            fetchBlogs(); // Refresh the list
+        })
+        .catch(error => console.error("Error deleting blog:", error));
+    }
+
+    function updateBlog(blogData) {
+        fetch(`http://localhost:5000/api/content/blogs/${blogData.id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({ title: blogData.title, content: blogData.content })
+        })
+        .then(response => response.json())
+        .then(() => {
+            fetchBlogs(); // Refresh the list
+            const editModalEl = document.getElementById("editBlogModal");
+            const editModal = bootstrap.Modal.getInstance(editModalEl);
+            editModal.hide();
+        })
+        .catch(error => console.error("Error updating blog:", error));
+    }
+
+    function openEditModal(id, title, content) {
+        document.getElementById("edit-blog-id").value = id;
+        document.getElementById("edit-blog-title").value = title;
+        document.getElementById("edit-blog-content").value = content;
+
+        const editModalEl = document.getElementById("editBlogModal");
+        const editModal = new bootstrap.Modal(editModalEl);
+        editModal.show();
+    }
+
     function fetchBlogs() {
         fetch("http://localhost:5000/api/content/blogs", {
-                headers: {
+            headers: {
                 "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            .then(response => response.json())
-            .then(blogs => {
-                // Update your UI with the blogs data.
-                console.log("Fetched blogs:", blogs);
-                // For example, create cards or list items to display each blog.
-            })
-            .catch(error => console.error("Error fetching blogs:", error));
+            }
+        })
+        .then(response => response.json())
+        .then(blogs => {
+            const blogsList = document.getElementById("blogs-list");
+            blogsList.innerHTML = ""; // Clear previous entries
+
+            if (blogs.length === 0) {
+                blogsList.innerHTML = "<p>No blogs to display.</p>";
+                return;
+            }
+
+            blogs.forEach(blog => {
+                const blogItem = document.createElement("div");
+                blogItem.classList.add("card", "mb-3");
+                blogItem.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">${blog.title}</h5>
+                        <p class="card-text">${blog.content}</p>
+                        <button class="btn btn-warning btn-sm edit-btn" data-id="${blog._id}" data-title="${blog.title}" data-content="${blog.content}">Edit</button>
+                        <button class="btn btn-danger btn-sm delete-btn" data-id="${blog._id}">Delete</button>
+                    </div>
+                `;
+                blogsList.appendChild(blogItem);
+            });
+
+            // Add event listeners to Edit and Delete buttons
+            document.querySelectorAll(".edit-btn").forEach(button => {
+                button.addEventListener("click", function() {
+                    openEditModal(this.dataset.id, this.dataset.title, this.dataset.content);
+                });
+            });
+
+            document.querySelectorAll(".delete-btn").forEach(button => {
+                button.addEventListener("click", function() {
+                    deleteBlog(this.dataset.id);
+                });
+            });
+        })
+        .catch(error => console.error("Error fetching blogs:", error));
     }
+
 
     function createBlog(blogData) {
     fetch("http://localhost:5000/api/content/blogs", {  // Replace with your actual backend URL when deployed
@@ -305,6 +408,15 @@
   this.reset();
 });
 
+    document.getElementById("edit-blog-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const id = document.getElementById("edit-blog-id").value;
+        const title = document.getElementById("edit-blog-title").value;
+        const content = document.getElementById("edit-blog-content").value;
+
+        updateBlog({ id, title, content });
+    });
 
   </script>
   <!-- Team Script-->
