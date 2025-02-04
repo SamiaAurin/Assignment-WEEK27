@@ -1,24 +1,24 @@
-const express = require("express");
+// routes/contentRoutes.js
+const express = require('express');
 const router = express.Router();
-const contentController = require("../controllers/contentController");
-const authMiddleware = require("../middleware/authMiddleware");
+const contentController = require('../controllers/contentController');
 
-// BLOG Routes
-router.get("/blogs", contentController.getBlogs);
-router.post("/blogs", authMiddleware, contentController.createBlog);
-router.put("/blogs/:id", authMiddleware, contentController.updateBlog);
-router.delete("/blogs/:id", authMiddleware, contentController.deleteBlog);
+// Blog routes
+router.get('/blogs', contentController.fetchBlogs);
+router.post('/blogs', contentController.createBlog);
+router.put('/blogs/:id', contentController.updateBlog);
+router.delete('/blogs/:id', contentController.deleteBlog);
 
-// TEAM Routes
-router.get("/team", contentController.getTeamMembers);
-router.post("/team", authMiddleware, contentController.createTeamMember);
-router.put("/team/:id", authMiddleware, contentController.updateTeamMember);
-router.delete("/team/:id", authMiddleware, contentController.deleteTeamMember);
+// Team routes
+router.get('/team', contentController.fetchTeamMembers);
+router.post('/team', contentController.createTeamMember);
+router.put('/team/:id', contentController.updateTeamMember);
+router.delete('/team/:id', contentController.deleteTeamMember);
 
-// SERVICE Routes
-router.get("/services", contentController.getServices);
-router.post("/services", authMiddleware, contentController.createService);
-router.put("/services/:id", authMiddleware, contentController.updateService);
-router.delete("/services/:id", authMiddleware, contentController.deleteService);
+// Service routes
+router.get('/services', contentController.fetchServices);
+router.post('/services', contentController.createService);
+router.put('/services/:id', contentController.updateService);
+router.delete('/services/:id', contentController.deleteService);
 
 module.exports = router;

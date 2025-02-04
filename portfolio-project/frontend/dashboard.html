@@ -42,6 +42,99 @@
       <!-- Content will be injected here by JavaScript -->
     </div>
   </div>
+  
+  <!-- Add Blog Modal -->
+  <div class="modal fade" id="blogModal" tabindex="-1" aria-labelledby="blogModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="blog-form">
+          <div class="modal-header">
+            <h5 class="modal-title" id="blogModalLabel">Add New Blog</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="blog-title" class="form-label">Title</label>
+              <input type="text" class="form-control" id="blog-title" required>
+            </div>
+            <div class="mb-3">
+              <label for="blog-content" class="form-label">Content</label>
+              <textarea class="form-control" id="blog-content" rows="4" required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Save Blog</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Add Team Member Modal -->
+  <div class="modal fade" id="teamModal" tabindex="-1" aria-labelledby="teamModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="team-form">
+          <div class="modal-header">
+            <h5 class="modal-title" id="teamModalLabel">Add New Team Member</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="team-name" class="form-label">Name</label>
+              <input type="text" class="form-control" id="team-name" placeholder="Enter name" required>
+            </div>
+            <div class="mb-3">
+              <label for="team-role" class="form-label">Role</label>
+              <input type="text" class="form-control" id="team-role" placeholder="Enter role" required>
+            </div>
+            <div class="mb-3">
+              <label for="team-bio" class="form-label">Bio</label>
+              <textarea class="form-control" id="team-bio" rows="3" placeholder="Enter bio"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="team-image" class="form-label">Image URL</label>
+              <input type="url" class="form-control" id="team-image" placeholder="Enter image URL">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Save Team Member</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Add Service Modal -->
+  <div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="service-form">
+          <div class="modal-header">
+            <h5 class="modal-title" id="serviceModalLabel">Add New Service</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="service-title" class="form-label">Title</label>
+              <input type="text" class="form-control" id="service-title" placeholder="Enter service title" required>
+            </div>
+            <div class="mb-3">
+              <label for="service-description" class="form-label">Description</label>
+              <textarea class="form-control" id="service-description" rows="4" placeholder="Enter service description" required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Save Service</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
 
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -133,15 +226,208 @@
         <!-- Logout Button -->
         <button id="logoutBtn" class="btn btn-danger mt-4">Logout</button>
       `;
+    }
       
       document.getElementById("logoutBtn").addEventListener("click", function(){
         localStorage.removeItem("token");
         location.reload();
       });
-      
-      // Here, you would add code to fetch and display existing data for blogs, team, and services
-      // and attach event handlers to the "Add New ..." buttons for creating new content.
-    }
+
   </script>
+  <!-- Blog Script-->
+  <script>
+    function fetchBlogs() {
+        fetch("http://localhost:5000/api/content/blogs", {
+                headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
+            .then(response => response.json())
+            .then(blogs => {
+                // Update your UI with the blogs data.
+                console.log("Fetched blogs:", blogs);
+                // For example, create cards or list items to display each blog.
+            })
+            .catch(error => console.error("Error fetching blogs:", error));
+    }
+
+    function createBlog(blogData) {
+    fetch("http://localhost:5000/api/content/blogs", {  // Replace with your actual backend URL when deployed
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + localStorage.getItem("token")
+        },
+        body: JSON.stringify(blogData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        fetchBlogs();
+        console.log("Blog created:", data);
+    })
+    .catch(error => console.error("Error creating blog:", error));
+    }
+
+    
+    // Only add the event listener if the user is logged in (token exists)
+    if (localStorage.getItem("token")) {
+        // Add listener to the "Add New Blog" button
+        const addBlogBtn = document.querySelector("#blogs button.btn-success");
+        if (addBlogBtn) {
+        addBlogBtn.addEventListener("click", function() {
+            // Open the blog modal using Bootstrap's Modal API
+            const blogModalEl = document.getElementById("blogModal");
+            const blogModal = new bootstrap.Modal(blogModalEl);
+            blogModal.show();
+        });
+        }
+    }
+    
+    document.getElementById("blog-form").addEventListener("submit", function(e) {
+  e.preventDefault(); // Prevent the default form submission
+  
+  // Get values from the form inputs
+  const title = document.getElementById("blog-title").value;
+  const content = document.getElementById("blog-content").value;
+  
+  // Create a data object for the new blog
+  const blogData = { title, content };
+
+  // Call the createBlog() function (you need to have this function defined)
+  createBlog(blogData);
+
+  // Close the modal after submission
+  const blogModalEl = document.getElementById("blogModal");
+  const blogModal = bootstrap.Modal.getInstance(blogModalEl);
+  blogModal.hide();
+
+  // Optionally, reset the form fields
+  this.reset();
+});
+
+
+  </script>
+  <!-- Team Script-->
+   <script>
+     function fetchTeam() {
+    fetch("http://localhost:5000/api/content/team", {
+            headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+        .then(response => response.json())
+        .then(blogs => {
+            // Update your UI with the blogs data.
+            console.log("Fetched blogs:", blogs);
+            // For example, create cards or list items to display each blog.
+        })
+        .catch(error => console.error("Error fetching blogs:", error));
+    }
+    function createTeamMember(teamData) {
+        fetch("http://localhost:5000/api/content/team", {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(teamData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Team member created:", data);
+            fetchTeam();
+        })
+        .catch(error => console.error("Error creating team member:", error));
+    }
+
+    document.querySelector("#team button.btn-success").addEventListener("click", function() {
+        const teamModalEl = document.getElementById("teamModal");
+        const teamModal = new bootstrap.Modal(teamModalEl);
+        teamModal.show();
+    });
+
+    document.getElementById("team-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const name = document.getElementById("team-name").value;
+        const role = document.getElementById("team-role").value;
+        const bio = document.getElementById("team-bio").value;
+        const imageUrl = document.getElementById("team-image").value;
+        
+        const teamData = { name, role, bio, imageUrl };
+        
+        // Call your function to create a team member (this should send the data to your backend)
+        createTeamMember(teamData);
+        
+        // Close the modal
+        const teamModalEl = document.getElementById("teamModal");
+        const teamModal = bootstrap.Modal.getInstance(teamModalEl);
+        teamModal.hide();
+        
+        // Optionally reset the form
+        this.reset();
+    });
+
+
+   </script>
+  <!-- Service Script --> 
+  <script>
+     function fetchServices() {
+        fetch("http://localhost:5000/api/content/services", {
+                headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
+            .then(response => response.json())
+            .then(blogs => {
+                // Update your UI with the blogs data.
+                console.log("Fetched blogs:", blogs);
+                // For example, create cards or list items to display each blog.
+            })
+            .catch(error => console.error("Error fetching blogs:", error));
+    }
+    function createService(serviceData) {
+        fetch("http://localhost:5000/api/content/services", {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(serviceData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Service created:", data);
+            // Refresh the services list if necessary
+            fetchServices();
+        })
+        .catch(error => console.error("Error creating service:", error));
+    }
+
+    document.querySelector("#services button.btn-success").addEventListener("click", function() {
+        const serviceModalEl = document.getElementById("serviceModal");
+        const serviceModal = new bootstrap.Modal(serviceModalEl);
+        serviceModal.show();
+    });
+    document.getElementById("service-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        
+        const title = document.getElementById("service-title").value;
+        const description = document.getElementById("service-description").value;
+        const serviceData = { title, description };
+        
+        // Call your function to create a service (make sure you have this function defined)
+        createService(serviceData);
+        
+        // Close the modal after submission
+        const serviceModalEl = document.getElementById("serviceModal");
+        const serviceModal = bootstrap.Modal.getInstance(serviceModalEl);
+        serviceModal.hide();
+        
+        // Reset the form fields
+        this.reset();
+    });
+
+
+  </script> 
 </body>
 </html>
