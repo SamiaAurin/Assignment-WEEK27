@@ -96,7 +96,7 @@
     </div>
   </div>
   <!--------------------------------------------------------------->
-  
+
   <!-- Add Team Member Modal -->
   <div class="modal fade" id="teamModal" tabindex="-1" aria-labelledby="teamModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -132,6 +132,39 @@
       </div>
     </div>
   </div>
+  <!-- Edit Team Member Modal -->
+  <div class="modal fade" id="editTeamModal" tabindex="-1" aria-labelledby="editTeamModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editTeamModalLabel">Edit Team Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-team-form">
+                    <input type="hidden" id="edit-team-id">
+                    <div class="mb-3">
+                        <label for="edit-team-name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="edit-team-name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-team-role" class="form-label">Role</label>
+                        <input type="text" class="form-control" id="edit-team-role" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-team-bio" class="form-label">Bio</label>
+                        <textarea class="form-control" id="edit-team-bio" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-team-image" class="form-label">Image URL</label>
+                        <input type="url" class="form-control" id="edit-team-image">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Team Member</button>
+                </form>
+            </div>
+        </div>
+    </div>
+  </div>
 
   <!--------------------------------------------------------------->
   <!-- Add Service Modal -->
@@ -161,8 +194,37 @@
       </div>
     </div>
   </div>
-  
+  <!-- Edit Service Modal -->
+  <div class="modal fade" id="editServiceModal" tabindex="-1" aria-labelledby="editServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editServiceModalLabel">Edit Service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-service-form">
+                    <input type="hidden" id="edit-service-id">
+                    <div class="mb-3">
+                        <label for="edit-service-title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="edit-service-title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-service-description" class="form-label">Description</label>
+                        <textarea class="form-control" id="edit-service-description" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-service-image" class="form-label">Image URL</label>
+                        <input type="url" class="form-control" id="edit-service-image">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Service</button>
+                </form>
+            </div>
+        </div>
+    </div>
+  </div>
 
+  <!--------------------------------------------------------------->
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
@@ -387,26 +449,26 @@
     }
     
     document.getElementById("blog-form").addEventListener("submit", function(e) {
-  e.preventDefault(); // Prevent the default form submission
-  
-  // Get values from the form inputs
-  const title = document.getElementById("blog-title").value;
-  const content = document.getElementById("blog-content").value;
-  
-  // Create a data object for the new blog
-  const blogData = { title, content };
+      e.preventDefault(); // Prevent the default form submission
+      
+      // Get values from the form inputs
+      const title = document.getElementById("blog-title").value;
+      const content = document.getElementById("blog-content").value;
+      
+      // Create a data object for the new blog
+      const blogData = { title, content };
 
-  // Call the createBlog() function (you need to have this function defined)
-  createBlog(blogData);
+      // Call the createBlog() function (you need to have this function defined)
+      createBlog(blogData);
 
-  // Close the modal after submission
-  const blogModalEl = document.getElementById("blogModal");
-  const blogModal = bootstrap.Modal.getInstance(blogModalEl);
-  blogModal.hide();
+      // Close the modal after submission
+      const blogModalEl = document.getElementById("blogModal");
+      const blogModal = bootstrap.Modal.getInstance(blogModalEl);
+      blogModal.hide();
 
-  // Optionally, reset the form fields
-  this.reset();
-});
+      // Optionally, reset the form fields
+      this.reset();
+    });
 
     document.getElementById("edit-blog-form").addEventListener("submit", function(e) {
         e.preventDefault();
@@ -421,20 +483,102 @@
   </script>
   <!-- Team Script-->
    <script>
-     function fetchTeam() {
-    fetch("http://localhost:5000/api/content/team", {
+    function deleteTeamMember(memberId) {
+        if (!confirm("Are you sure you want to delete this team member?")) return;
+
+        fetch(`http://localhost:5000/api/content/team/${memberId}`, {
+            method: "DELETE",
             headers: {
-            "Authorization": "Bearer " + localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+        .then(() => {
+            fetchTeamMembers(); // Refresh the team list
+        })
+        .catch(error => console.error("Error deleting team member:", error));
+    }
+
+    function updateTeamMember(teamData) {
+        fetch(`http://localhost:5000/api/content/team/${teamData.id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({
+                name: teamData.name,
+                role: teamData.role,
+                image: teamData.image
+            })
+        })
+        .then(response => response.json())
+        .then(() => {
+            fetchTeamMembers(); // Refresh the list
+            const editModalEl = document.getElementById("editTeamModal");
+            const editModal = bootstrap.Modal.getInstance(editModalEl);
+            editModal.hide();
+        })
+        .catch(error => console.error("Error updating team member:", error));
+    }
+
+    function openEditTeamModal(id, name, role, image) {
+        document.getElementById("edit-team-id").value = id;
+        document.getElementById("edit-team-name").value = name;
+        document.getElementById("edit-team-role").value = role;
+        document.getElementById("edit-team-image").value = image;
+
+        const editModalEl = document.getElementById("editTeamModal");
+        const editModal = new bootstrap.Modal(editModalEl);
+        editModal.show();
+    }
+
+    function fetchTeamMembers() {
+        fetch("http://localhost:5000/api/content/team", {
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         })
         .then(response => response.json())
-        .then(blogs => {
-            // Update your UI with the blogs data.
-            console.log("Fetched blogs:", blogs);
-            // For example, create cards or list items to display each blog.
+        .then(teamMembers => {
+            const teamList = document.getElementById("team-list");
+            teamList.innerHTML = ""; // Clear previous entries
+
+            if (teamMembers.length === 0) {
+                teamList.innerHTML = "<p>No team members to display.</p>";
+                return;
+            }
+
+            teamMembers.forEach(member => {
+                const teamItem = document.createElement("div");
+                teamItem.classList.add("card", "mb-3");
+                teamItem.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">${member.name}</h5>
+                        <p class="card-text"><strong>Role:</strong> ${member.role}</p>
+                        <img src="${member.image}" alt="${member.name}" class="img-fluid mb-2" style="max-height: 100px;">
+                        <button class="btn btn-warning btn-sm edit-btn" data-id="${member._id}" data-name="${member.name}" data-role="${member.role}" data-image="${member.image}">Edit</button>
+                        <button class="btn btn-danger btn-sm delete-btn" data-id="${member._id}">Delete</button>
+                    </div>
+                `;
+                teamList.appendChild(teamItem);
+            });
+
+            // Add event listeners to Edit and Delete buttons
+            document.querySelectorAll(".edit-btn").forEach(button => {
+                button.addEventListener("click", function() {
+                    openEditTeamModal(this.dataset.id, this.dataset.name, this.dataset.role, this.dataset.image);
+                });
+            });
+
+            document.querySelectorAll(".delete-btn").forEach(button => {
+                button.addEventListener("click", function() {
+                    deleteTeamMember(this.dataset.id);
+                });
+            });
         })
-        .catch(error => console.error("Error fetching blogs:", error));
+        .catch(error => console.error("Error fetching team members:", error));
     }
+
     function createTeamMember(teamData) {
         fetch("http://localhost:5000/api/content/team", {
             method: "POST",
@@ -447,9 +591,23 @@
         .then(response => response.json())
         .then(data => {
             console.log("Team member created:", data);
-            fetchTeam();
+            fetchTeamMembers();
         })
         .catch(error => console.error("Error creating team member:", error));
+    }
+    
+    // Only add the event listener if the user is logged in (token exists)
+    if (localStorage.getItem("token")) {
+        // Add listener to the "Add New Team Member" button
+        const addTeamMemberBtn = document.querySelector("#team button.btn-success");
+        if (addTeamMemberBtn) {
+            addTeamMemberBtn.addEventListener("click", function() {
+                // Open the team member modal using Bootstrap's Modal API
+                const teamModalEl = document.getElementById("teamModal");
+                const teamModal = new bootstrap.Modal(teamModalEl);
+                teamModal.show();
+            });
+        }
     }
 
     document.querySelector("#team button.btn-success").addEventListener("click", function() {
@@ -479,24 +637,113 @@
         this.reset();
     });
 
+    document.getElementById("edit-team-form").addEventListener("submit", function(e) {
+        e.preventDefault();
 
+        const id = document.getElementById("edit-team-id").value;
+        const name = document.getElementById("edit-team-name").value;
+        const role = document.getElementById("edit-team-role").value;
+
+        updateTeamMember({ id, name, role });
+    });
+ 
    </script>
   <!-- Service Script --> 
   <script>
-     function fetchServices() {
-        fetch("http://localhost:5000/api/content/services", {
-                headers: {
+
+    function deleteService(serviceId) {
+        if (!confirm("Are you sure you want to delete this service?")) return;
+
+        fetch(`http://localhost:5000/api/content/services/${serviceId}`, {
+            method: "DELETE",
+            headers: {
                 "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            .then(response => response.json())
-            .then(blogs => {
-                // Update your UI with the blogs data.
-                console.log("Fetched blogs:", blogs);
-                // For example, create cards or list items to display each blog.
-            })
-            .catch(error => console.error("Error fetching blogs:", error));
+            }
+        })
+        .then(() => {
+            fetchServices(); // Refresh the service list
+        })
+        .catch(error => console.error("Error deleting service:", error));
     }
+
+    function updateService(serviceData) {
+        fetch(`http://localhost:5000/api/content/services/${serviceData.id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({
+                title: serviceData.title,
+                description: serviceData.description
+            })
+        })
+        .then(response => response.json())
+        .then(() => {
+            fetchServices(); // Refresh the list
+            const editModalEl = document.getElementById("editServiceModal");
+            const editModal = bootstrap.Modal.getInstance(editModalEl);
+            editModal.hide();
+        })
+        .catch(error => console.error("Error updating service:", error));
+    }
+
+    function openEditServiceModal(id, title, description) {
+        document.getElementById("edit-service-id").value = id;
+        document.getElementById("edit-service-title").value = title;
+        document.getElementById("edit-service-description").value = description;
+
+        const editModalEl = document.getElementById("editServiceModal");
+        const editModal = new bootstrap.Modal(editModalEl);
+        editModal.show();
+    }
+
+    function fetchServices() {
+        fetch("http://localhost:5000/api/content/services", {
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+        .then(response => response.json())
+        .then(services => {
+            const servicesList = document.getElementById("services-list");
+            servicesList.innerHTML = ""; // Clear previous entries
+
+            if (services.length === 0) {
+                servicesList.innerHTML = "<p>No services to display.</p>";
+                return;
+            }
+
+            services.forEach(service => {
+                const serviceItem = document.createElement("div");
+                serviceItem.classList.add("card", "mb-3");
+                serviceItem.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">${service.title}</h5>
+                        <p class="card-text">${service.description}</p>
+                        <button class="btn btn-warning btn-sm edit-btn" data-id="${service._id}" data-title="${service.title}" data-description="${service.description}">Edit</button>
+                        <button class="btn btn-danger btn-sm delete-btn" data-id="${service._id}">Delete</button>
+                    </div>
+                `;
+                servicesList.appendChild(serviceItem);
+            });
+
+            // Add event listeners to Edit and Delete buttons
+            document.querySelectorAll(".edit-btn").forEach(button => {
+                button.addEventListener("click", function() {
+                    openEditServiceModal(this.dataset.id, this.dataset.title, this.dataset.description);
+                });
+            });
+
+            document.querySelectorAll(".delete-btn").forEach(button => {
+                button.addEventListener("click", function() {
+                    deleteService(this.dataset.id);
+                });
+            });
+        })
+        .catch(error => console.error("Error fetching services:", error));
+      }
+
     function createService(serviceData) {
         fetch("http://localhost:5000/api/content/services", {
             method: "POST",
@@ -514,32 +761,56 @@
         })
         .catch(error => console.error("Error creating service:", error));
     }
+    
+    // Only add the event listener if the user is logged in (token exists)
+    if (localStorage.getItem("token")) {
+        // Add listener to the "Add New Service" button
+        const addServiceBtn = document.querySelector("#services button.btn-success");
+        if (addServiceBtn) {
+            addServiceBtn.addEventListener("click", function() {
+                // Open the service modal using Bootstrap's Modal API
+                const serviceModalEl = document.getElementById("serviceModal");
+                const serviceModal = new bootstrap.Modal(serviceModalEl);
+                serviceModal.show();
+            });
+        }
+    }
+    document.getElementById("service-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const title = document.getElementById("service-title").value;
+        const description = document.getElementById("service-description").value;
+        
+        const serviceData = { title, description };
+        
+        // Call your function to create a service (this should send the data to your backend)
+        createService(serviceData);
+        
+        // Close the modal
+        const serviceModalEl = document.getElementById("serviceModal");
+        const serviceModal = bootstrap.Modal.getInstance(serviceModalEl);
+        serviceModal.hide();
+        
+        // Optionally reset the form
+        this.reset();
+    });
+
+    document.getElementById("edit-service-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const id = document.getElementById("edit-service-id").value;
+        const title = document.getElementById("edit-service-title").value;
+        const description = document.getElementById("edit-service-description").value;
+
+        updateService({ id, title, description });
+    });
 
     document.querySelector("#services button.btn-success").addEventListener("click", function() {
         const serviceModalEl = document.getElementById("serviceModal");
         const serviceModal = new bootstrap.Modal(serviceModalEl);
         serviceModal.show();
     });
-    document.getElementById("service-form").addEventListener("submit", function(e) {
-        e.preventDefault();
-        
-        const title = document.getElementById("service-title").value;
-        const description = document.getElementById("service-description").value;
-        const serviceData = { title, description };
-        
-        // Call your function to create a service (make sure you have this function defined)
-        createService(serviceData);
-        
-        // Close the modal after submission
-        const serviceModalEl = document.getElementById("serviceModal");
-        const serviceModal = bootstrap.Modal.getInstance(serviceModalEl);
-        serviceModal.hide();
-        
-        // Reset the form fields
-        this.reset();
-    });
-
-
+    
   </script> 
 </body>
 </html>
