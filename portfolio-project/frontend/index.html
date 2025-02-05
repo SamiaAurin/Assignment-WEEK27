@@ -35,7 +35,7 @@
   <section id="hero" class="py-5 bg-secondary text-white text-center">
     <div class="container">
       <h1>Welcome to My Portfolio</h1>
-      <p>Your tagline or a brief description goes here.</p>
+      <p>Syeda Samia Sultana</p>
     </div>
   </section>
 
@@ -58,7 +58,42 @@
 
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Custom JS -->
-  <script src="assets/js/main.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const blogSection = document.getElementById("blog-container");
+
+      // Replace with your actual backend endpoint URL
+      fetch("http://localhost:5000/api/content/blogs")
+        .then(response => response.json())
+        .then(blogs => {
+          if (blogs.length === 0) {
+            blogSection.innerHTML = "<p class='text-center'>No blog posts available at the moment.</p>";
+            return;
+          }
+          blogs.forEach(blog => {
+            // Create a column for each blog post
+            const col = document.createElement("div");
+            col.className = "col-md-4 mb-4";
+            col.innerHTML = `
+              <div class="card h-100">
+                <div class="card-body">
+                  <h5 class="card-title">${blog.title}</h5>
+                  <p class="card-text">${blog.content.substring(0, 100)}...</p>
+                </div>
+                <div class="card-footer">
+                  <small class="text-muted">Published on ${new Date(blog.createdAt).toLocaleDateString()}</small>
+                </div>
+              </div>
+            `;
+            blogSection.appendChild(col);
+          });
+        })
+        .catch(error => {
+          console.error("Error fetching blogs:", error);
+          blogSection.innerHTML = "<p class='text-center'>Error loading blog posts.</p>";
+        });
+    });
+  </script>
+
 </body>
 </html>
